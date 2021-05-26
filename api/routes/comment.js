@@ -4,12 +4,12 @@ const Comment = require('../models/comment');
 const mongoose = require('mongoose');
 //add a comment
 router.post('/add', (req, res, next) => {
-   console.log(req.body)
    const comment = new Comment({
       _id: new mongoose.Types.ObjectId(),
       text: req.body.text,
       createdAt: new Date(),
-      userId: req.body.userId
+      userId: req.body.userId,
+      taskId: req.body.taskId
    });
    comment.save()
       .then(result => {
@@ -27,8 +27,8 @@ router.post('/add', (req, res, next) => {
 
 
 // edit a comment
-router.post("/:id", (req, res, next) => {
-   const id = req.params.id;
+router.post("/edit", (req, res, next) => {
+   const id = req.body.id;
    Comment.updateOne({ _id: id }, { $set: { text: req.body.text, createdAt: new Date() } })
       .exec()
       .then(result => {

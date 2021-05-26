@@ -4,7 +4,8 @@ const CommentSchema = mongoose.Schema({
    _id: mongoose.Schema.Types.ObjectId,
    text: { type: String },
    createdAt: { type: Date },
-   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+   TaskId: { type: mongoose.Schema.Types.ObjectId, ref: 'Task' },
 });
 
 

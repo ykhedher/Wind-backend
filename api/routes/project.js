@@ -86,8 +86,8 @@ router.delete("/:name", (req, res, next) => {
 });
 
 //edit project
-router.post("/:name", (req, res, next) => {
-   const name = req.params.name;
+router.post("/edit", (req, res, next) => {
+   const name = req.body.name;
    const updateOps = {};
    updateOps.name = req.body.name;
    updateOps.dateStart = new Date(req.body.dateStart);

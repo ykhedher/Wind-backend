@@ -140,11 +140,10 @@ router.delete("/:username", (req, res, next) => {
 });
 
 //edit user profile
-router.post("/:username", upload.single('avatar'), (req, res, next) => {
-   const username = req.params.username;
+router.post("/edit", upload.single('avatar'), (req, res, next) => {
+   const username = req.body.username;
    const updateOps = {};
    for (const ops in req.body) {
-      //console.log(ops)
       if (ops === 'password') {
          bcrypt.hash(req.body[ops], 10, (err, hash) => {
             password = hash;

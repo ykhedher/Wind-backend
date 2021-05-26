@@ -27,7 +27,7 @@ router.post('/add', (req, res, next) => {
 })
 
 
-//get all projects
+//get all sprints
 router.get('/all', (req, res, next) => {
    Sprint.find({}).exec()
       .then(sprints => {
@@ -42,8 +42,8 @@ router.get('/all', (req, res, next) => {
 })
 
 //edit sprint
-router.post("/:sprintId", (req, res, next) => {
-   const sprintId = req.params.sprintId;
+router.post("/edit", (req, res, next) => {
+   const sprintId = req.body.sprintId;
    const updateOps = {};
    updateOps.dateStart = new Date(req.body.dateStart);
    updateOps.dateEnd = new Date(req.body.dateEnd);
@@ -69,6 +69,8 @@ router.post("/:sprintId", (req, res, next) => {
       });
 });
 
+
+// end a sprint
 router.post('/end/:id', (req, res, next) => {
    const sprintId = req.params.id;
    Sprint.updateOne({ _id: sprintId }, { $set: { isActive: false } })
