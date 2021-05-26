@@ -1,7 +1,12 @@
 const express = require('express')
-
 const app = express();
-const userRoutes = require('./api/routes/user')
+
+const userRoutes = require('./api/routes/user');
+const projectRoutes = require('./api/routes/project');
+const commentRoutes = require('./api/routes/comment');
+const sprintRoutes = require('./api/routes/sprint');
+const taskRoutes = require('./api/routes/task')
+
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 // support parsing of application/json type post data
@@ -26,8 +31,15 @@ app.use((req, res, next) => {
    }
    next()
 })
+
 mongoose.set('useCreateIndex', true)
-app.use('/user', userRoutes)
+
+//Routes
+app.use('/user', userRoutes);
+app.use('/project', projectRoutes);
+app.use('/comment', commentRoutes);
+app.use('/sprint', sprintRoutes);
+app.use('/task', taskRoutes)
 
 
 app.use((req, res, next) => {
