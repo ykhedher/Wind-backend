@@ -5,7 +5,7 @@ const CommentSchema = mongoose.Schema({
    text: { type: String },
    createdAt: { type: Date },
    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-   TaskId: { type: mongoose.Schema.Types.ObjectId, ref: 'Task' },
+   taskId: { type: mongoose.Schema.Types.ObjectId, ref: 'Task' },
 });
 
 

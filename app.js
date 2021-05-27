@@ -1,5 +1,8 @@
 const express = require('express')
 const app = express();
+require('dotenv').config();
+const cors = require('cors');
+app.use(cors());
 
 const userRoutes = require('./api/routes/user');
 const projectRoutes = require('./api/routes/project');
@@ -22,24 +25,24 @@ mongoose.connect('mongodb+srv://youssefwind99:windpassword@wind.td90i.mongodb.ne
       console.log(`DB Connection Error: ${err.message}`);
    })
 
-app.use((req, res, next) => {
-   res.header('Access-Control-Allow-Origin', '*');
-   res.header('Access-Control-Allow-Headers', '*');
-   if (req.method === 'OPTIONS') {
-      res.header('Access-Control-Allow-Methods', '*')
-      return res.status(200).json({})
-   }
-   next()
-})
+// app.use((req, res, next) => {
+//    res.header('Access-Control-Allow-Origin', '*');
+//    res.header('Access-Control-Allow-Headers', '*');
+//    if (req.method === 'OPTIONS') {
+//       res.header('Access-Control-Allow-Methods', '*')
+//       return res.status(200).json({})
+//    }
+//    next()
+// })
 
 mongoose.set('useCreateIndex', true)
 
 //Routes
-app.use('/user', userRoutes);
-app.use('/project', projectRoutes);
-app.use('/comment', commentRoutes);
-app.use('/sprint', sprintRoutes);
-app.use('/task', taskRoutes)
+app.use('/users', userRoutes);
+app.use('/projects', projectRoutes);
+app.use('/comments', commentRoutes);
+app.use('/sprints', sprintRoutes);
+app.use('/tasks', taskRoutes);
 
 
 app.use((req, res, next) => {

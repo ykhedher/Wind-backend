@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 
 
 //create a task
-router.post('/add', (req, res, next) => {
+router.post('/', (req, res, next) => {
    console.log(req.body)
    const task = new Task({
       _id: new mongoose.Types.ObjectId(),
@@ -35,7 +35,7 @@ router.post('/add', (req, res, next) => {
 })
 
 //get all tasks
-router.get('/all', (req, res, next) => {
+router.get('/', (req, res, next) => {
    Task.find({}).exec()
       .then(tasks => {
          return res.send(tasks).status(200);

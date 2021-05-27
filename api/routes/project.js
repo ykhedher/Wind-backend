@@ -30,7 +30,7 @@ router.post('/add', (req, res, next) => {
 
 
 //get all projects
-router.get('/all', (req, res, next) => {
+router.get('/', (req, res, next) => {
    Project.find({}).exec()
       .then(projects => {
          return res.send(projects).status(200);

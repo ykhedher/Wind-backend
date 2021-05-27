@@ -6,11 +6,14 @@ const bcrypt = require('bcrypt');
 const multer = require('multer')
 var upload = multer({ dest: 'uploads/' })
 const jwt = require('jsonwebtoken');
-const secretKey = 'wind-secret'
+const sendMail = require('../services/emailSender')
 
+
+const secretKey = 'wind-secret'
 // Create user
 router.post('/signup', upload.single('avatar'), (req, res, next) => {
-   bcrypt.hash(req.body.password, 10, (err, hash) => {
+   let password = req.body.password
+   bcrypt.hash(password, 10, (err, hash) => {
       if (err) {
          return res.status(500).json({
             error: err
@@ -27,8 +30,10 @@ router.post('/signup', upload.single('avatar'), (req, res, next) => {
             userType: req.body.userType,
             image: req.file.filename
          });
+
          user.save()
             .then(result => {
+               sendMail(user.email, user.firstName, password);
                res.status(201).json({
                   message: 'User created',
                   user: user
@@ -44,14 +49,14 @@ router.post('/signup', upload.single('avatar'), (req, res, next) => {
 })
 
 router.post('/login', (req, res, next) => {
-   User.find({ email: req.body.email }).exec()
+   User.findOne({ email: req.body.email }).exec()
       .then(user => {
          if (user.length < 1) {
             return res.status(401).json({
                message: 'User not found'
             })
          }
-         bcrypt.compare(req.body.password, user[0].password, (err, result) => {
+         bcrypt.compare(req.body.password, user.password, (err, result) => {
             if (!result) {
                return res.status(401).json({
                   message: 'Password is not correct'
@@ -59,8 +64,8 @@ router.post('/login', (req, res, next) => {
             }
             if (result) {
                const token = jwt.sign({
-                  email: user[0].email,
-                  userId: user[0]._id
+                  email: user.email,
+                  userId: user._id
                },
                   secretKey,
                   {
@@ -84,7 +89,7 @@ router.post('/login', (req, res, next) => {
 })
 
 //get all users
-router.get('/all', (req, res, next) => {
+router.get('/', (req, res, next) => {
    User.find({}).exec()
       .then(users => {
          return res.send(users).status(200);
@@ -116,9 +121,9 @@ router.get('/:username', (req, res, next) => {
 })
 
 //delete user by username
-router.delete("/:username", (req, res, next) => {
-   const username = req.params.username;
-   User.remove({ username: username })
+router.delete("/:id", (req, res, next) => {
+   const id = req.params.id;
+   User.deleteOne({ _id: id })
       .exec()
       .then(result => {
          if (result.deletedCount === 1) {
@@ -143,38 +148,52 @@ router.delete("/:username", (req, res, next) => {
 router.post("/edit", upload.single('avatar'), (req, res, next) => {
    const username = req.body.username;
    const updateOps = {};
-   for (const ops in req.body) {
-      if (ops === 'password') {
-         bcrypt.hash(req.body[ops], 10, (err, hash) => {
-            password = hash;
-            //updateOps.password= password
-         })
-      }
-      else {
-         updateOps[ops] = req.body[ops];
-      }
-   }
-   console.log(updateOps)
-   User.updateOne({ username: username }, { $set: updateOps })
-      .exec()
-      .then(result => {
-         if (result.nModified === 1) {
-            res.status(200).json({
-               message: 'User updated'
-            });
-         }
-         else {
-            res.status(404).send('Operation faild')
-         }
+   if (req.body.ops == 'password') {
+      bcrypt.hash(req.body.password, 10, (err, hash) => {
+         updateOps.password = hash;
+         User.updateOne({ username: username }, { $set: updateOps })
+            .exec()
+            .then(result => {
+               if (result.nModified === 1) {
+                  res.status(200).json({
+                     message: 'User updated'
+                  });
+               }
+               else {
+                  res.status(404).send('Operation faild')
+               }
 
+            }).catch(err => {
+               console.log(err);
+               res.status(500).json({
+                  error: err
+               });
+            });
       })
-      .catch(err => {
-         console.log(err);
-         res.status(500).json({
-            error: err
+   }
+   else {
+      updateOps[req.body.ops] = req.body[req.body.ops];
+      User.updateOne({ username: username }, { $set: updateOps })
+         .exec()
+         .then(result => {
+            if (result.nModified === 1) {
+               res.status(200).json({
+                  message: 'User updated'
+               });
+            }
+            else {
+               res.status(404).send('Operation faild')
+            }
+
+         }).catch(err => {
+            console.log(err);
+            res.status(500).json({
+               error: err
+            });
          });
-      });
+
+   }
 });
 
 
-module.exports = router;
+module.exports = router

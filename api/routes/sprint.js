@@ -71,8 +71,8 @@ router.post("/edit", (req, res, next) => {
 
 
 // end a sprint
-router.post('/end/:id', (req, res, next) => {
-   const sprintId = req.params.id;
+router.post('/end', (req, res, next) => {
+   const sprintId = req.body.id;
    Sprint.updateOne({ _id: sprintId }, { $set: { isActive: false } })
       .exec()
       .then(result => {

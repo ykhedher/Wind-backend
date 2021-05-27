@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const userSchema = mongoose.Schema({
    _id: mongoose.Schema.Types.ObjectId,
    username: {
-      type: String, 
+      type: String,
       unique: true
    },
    firstName: { type: String },
@@ -19,7 +19,8 @@ const userSchema = mongoose.Schema({
       enum: ['ADMIN', 'SCRUM_MASTER', 'COLLABORATOR'],
       default: 'COLLABORATOR'
    },
-   image: { type: String }
+   image: { type: String },
+   projects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }],
 });
 
 
