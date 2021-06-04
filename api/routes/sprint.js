@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const Sprint = require('../models/sprint');
 const mongoose = require('mongoose');
+const checkAuth = require('../middleware/checkAuth')
 
 
 // Create sprint
-router.post('/add', (req, res, next) => {
+router.post('/', checkAuth, (req, res, next) => {
    const sprint = new Sprint({
       _id: new mongoose.Types.ObjectId(),
       dateStart: new Date(req.body.dateStart),
@@ -28,7 +29,7 @@ router.post('/add', (req, res, next) => {
 
 
 //get all sprints
-router.get('/all', (req, res, next) => {
+router.get('/',checkAuth, (req, res, next) => {
    Sprint.find({}).exec()
       .then(sprints => {
          return res.send(sprints).status(200);
@@ -42,7 +43,7 @@ router.get('/all', (req, res, next) => {
 })
 
 //edit sprint
-router.post("/edit", (req, res, next) => {
+router.post('/edit',checkAuth, (req, res, next) => {
    const sprintId = req.body.sprintId;
    const updateOps = {};
    updateOps.dateStart = new Date(req.body.dateStart);
@@ -71,7 +72,7 @@ router.post("/edit", (req, res, next) => {
 
 
 // end a sprint
-router.post('/end', (req, res, next) => {
+router.post('/end', checkAuth,(req, res, next) => {
    const sprintId = req.body.id;
    Sprint.updateOne({ _id: sprintId }, { $set: { isActive: false } })
       .exec()

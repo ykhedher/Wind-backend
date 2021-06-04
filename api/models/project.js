@@ -4,11 +4,7 @@ const ProjectSchema = mongoose.Schema({
    name: { type: String },
    dateStart: { type: Date },
    description: { type: String },
-   status: {
-      type: String,
-      enum: ['TO_DO', 'PROGRESS', 'TEST', 'APPROVED'],
-      default: 'TO_DO'
-   },
+   status: { type: String }
 });
 
 

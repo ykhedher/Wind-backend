@@ -7,12 +7,13 @@ const multer = require('multer')
 var upload = multer({ dest: 'uploads/' })
 const jwt = require('jsonwebtoken');
 const sendMail = require('../services/emailSender')
-
-
 const secretKey = 'wind-secret'
+const checkAuth = require('../middleware/checkAuth')
+
 // Create user
-router.post('/signup', upload.single('avatar'), (req, res, next) => {
+router.post('/signup',checkAuth, upload.single('image'), (req, res, next) => {
    let password = req.body.password
+   console.log(req.file)
    bcrypt.hash(password, 10, (err, hash) => {
       if (err) {
          return res.status(500).json({
@@ -51,9 +52,9 @@ router.post('/signup', upload.single('avatar'), (req, res, next) => {
 router.post('/login', (req, res, next) => {
    User.findOne({ email: req.body.email }).exec()
       .then(user => {
-         if (user.length < 1) {
+         if (!user) {
             return res.status(401).json({
-               message: 'User not found'
+               message: 'Invalid Credentials'
             })
          }
          bcrypt.compare(req.body.password, user.password, (err, result) => {
@@ -75,7 +76,8 @@ router.post('/login', (req, res, next) => {
                )
                return res.status(200).json({
                   message: 'Succefully logged in',
-                  token: token
+                  token: token,
+                  user
                })
             }
          })
@@ -89,7 +91,7 @@ router.post('/login', (req, res, next) => {
 })
 
 //get all users
-router.get('/', (req, res, next) => {
+router.get('/', checkAuth,(req, res, next) => {
    User.find({}).exec()
       .then(users => {
          return res.send(users).status(200);
@@ -103,10 +105,10 @@ router.get('/', (req, res, next) => {
 })
 
 // get user by username
-router.get('/:username', (req, res, next) => {
-   User.find({ username: req.params.username }).exec()
+router.get('/:username',checkAuth, (req, res, next) => {
+   User.findOne({ username: req.params.username }).exec()
       .then(user => {
-         if (user.length === 1) {
+         if (user) {
             return res.send(user).status(200);
          }
          else
@@ -121,7 +123,7 @@ router.get('/:username', (req, res, next) => {
 })
 
 //delete user by username
-router.delete("/:id", (req, res, next) => {
+router.delete("/:id",checkAuth, (req, res, next) => {
    const id = req.params.id;
    User.deleteOne({ _id: id })
       .exec()
@@ -145,7 +147,7 @@ router.delete("/:id", (req, res, next) => {
 });
 
 //edit user profile
-router.post("/edit", upload.single('avatar'), (req, res, next) => {
+router.post("/edit",checkAuth, upload.single('avatar'), (req, res, next) => {
    const username = req.body.username;
    const updateOps = {};
    if (req.body.ops == 'password') {
@@ -194,6 +196,42 @@ router.post("/edit", upload.single('avatar'), (req, res, next) => {
 
    }
 });
+
+
+//Assign project to user
+router.post('/assign',checkAuth, (req, res, next) => {
+   console.log(req.body)
+   const username = req.body.username;
+   User.findOneAndUpdate({ username: username }, { $push: { projects: req.body.projectId } })
+      .exec()
+      .then((result) => {
+         res.status(200).json({
+            result
+         })
+      }).catch(err => {
+         console.log(err);
+         res.status(500).json({
+            error: err
+         });
+      });
+})
+
+//remove project from user
+router.post('/removeProject',checkAuth, (req, res, next) => {
+   const username = req.body.username;
+   User.findOneAndUpdate({ username: username }, { $pull: { projects: req.body.projectId } })
+      .exec()
+      .then((result) => {
+         res.status(200).json({
+            message: 'project removed from user',
+         })
+      }).catch(err => {
+         console.log(err);
+         res.status(500).json({
+            error: err
+         });
+      });
+})
 
 
 module.exports = router

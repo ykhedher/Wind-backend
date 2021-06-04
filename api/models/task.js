@@ -19,7 +19,7 @@ const TaskSchema = mongoose.Schema({
    lastUpdatedBy: { type: String },
    sprintId: { type: mongoose.Schema.Types.ObjectId, ref: 'Sprint' },
    affectedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-
+   tasklog: [{type: mongoose.Schema.Types.ObjectId, ref: 'Tasklog'}]
 
 
 });

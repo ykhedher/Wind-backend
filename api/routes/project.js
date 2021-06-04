@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const Project = require('../models/project');
 const mongoose = require('mongoose');
+const checkAuth = require('../middleware/checkAuth')
 
 
 // Create project
-router.post('/add', (req, res, next) => {
+router.post('/', checkAuth, (req, res, next) => {
    
    const project = new Project({
       _id: new mongoose.Types.ObjectId(),
@@ -30,7 +31,7 @@ router.post('/add', (req, res, next) => {
 
 
 //get all projects
-router.get('/', (req, res, next) => {
+router.get('/',checkAuth, (req, res, next) => {
    Project.find({}).exec()
       .then(projects => {
          return res.send(projects).status(200);
@@ -44,7 +45,7 @@ router.get('/', (req, res, next) => {
 })
 
 // get project by name
-router.get('/:name', (req, res, next) => {
+router.get('/:name',checkAuth, (req, res, next) => {
    Project.find({ name: req.params.name }).exec()
       .then(project => {
          if (project.length >= 1) {
@@ -62,7 +63,7 @@ router.get('/:name', (req, res, next) => {
 })
 
 //delete a project by name
-router.delete("/:name", (req, res, next) => {
+router.delete("/:name",checkAuth, (req, res, next) => {
    const name = req.params.name;
    Project.remove({ name: name })
       .exec()
@@ -86,7 +87,7 @@ router.delete("/:name", (req, res, next) => {
 });
 
 //edit project
-router.post("/edit", (req, res, next) => {
+router.post("/edit", checkAuth,(req, res, next) => {
    const name = req.body.name;
    const updateOps = {};
    updateOps.name = req.body.name;

@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const Task = require('../models/task');
 const mongoose = require('mongoose');
+const checkAuth = require('../middleware/checkAuth')
 
 
 
 //create a task
-router.post('/', (req, res, next) => {
+router.post('/',checkAuth, (req, res, next) => {
    console.log(req.body)
    const task = new Task({
       _id: new mongoose.Types.ObjectId(),
@@ -35,7 +36,7 @@ router.post('/', (req, res, next) => {
 })
 
 //get all tasks
-router.get('/', (req, res, next) => {
+router.get('/',checkAuth, (req, res, next) => {
    Task.find({}).exec()
       .then(tasks => {
          return res.send(tasks).status(200);
@@ -48,7 +49,7 @@ router.get('/', (req, res, next) => {
 })
 
 //get task by id
-router.get('/:id', (req, res, next) => {
+router.get('/:id',checkAuth, (req, res, next) => {
    Task.find({ _id: req.params.id }).exec()
       .then(task => {
          if (task.length === 1) {
@@ -67,7 +68,7 @@ router.get('/:id', (req, res, next) => {
 
 
 // edit a task
-router.post('/edit', (req, res, next) => {
+router.post('/edit',checkAuth, (req, res, next) => {
    const taskId = req.body.id;
    let updateOps = {
       name: req.body.name,
@@ -100,7 +101,7 @@ router.post('/edit', (req, res, next) => {
 })
 
 // delete task
-router.delete("/:id", (req, res, next) => {
+router.delete("/:id",checkAuth, (req, res, next) => {
    const id = req.params.id;
    Task.remove({ _id: id })
       .exec()
