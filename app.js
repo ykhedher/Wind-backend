@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 mongoose.set('useFindAndModify', false);
 
-
+app.use('/uploads',express.static('uploads'));
 
 mongoose.connect('mongodb+srv://youssefwind99:windpassword@wind.td90i.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true })
    .then(() => console.log('DB Connected!'))

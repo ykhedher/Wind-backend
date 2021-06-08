@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const Tasklog = mongoose.Schema({
    _id: mongoose.Schema.Types.ObjectId,
-   message: { type: String },
+   messages : [{date : Date, message : String}]
 });
 
 module.exports = mongoose.model('Tasklog', Tasklog)
