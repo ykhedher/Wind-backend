@@ -6,7 +6,6 @@ const bcrypt = require('bcrypt');
 const multer = require('multer')
 const jwt = require('jsonwebtoken');
 const sendMail = require('../services/emailSender')
-const secretKey = 'wind-secret'
 const checkAuth = require('../middleware/checkAuth');
 
 var storage = multer.diskStorage({
@@ -23,7 +22,6 @@ const upload = multer({ storage: storage })
 // Create user
 router.post('/signup', upload.single('image'), (req, res, next) => {
    let password = req.body.password
-   console.log(req.body, req.file)
    bcrypt.hash(password, 10, (err, hash) => {
       if (err) {
          return res.status(500).json({
@@ -41,10 +39,19 @@ router.post('/signup', upload.single('image'), (req, res, next) => {
             userType: req.body.userType,
             image: req.file.filename
          });
-
          user.save()
-            .then(result => {
-               sendMail(user.email, user.firstName, password);
+            .then(() => {
+               const token = jwt.sign({
+                  email: user.email,
+                  userId: user._id
+               },
+                  process.env.TOKEN_SECRET_KEY_SIGNUP,
+                  {
+                     expiresIn: '8h'
+                  },
+
+               )
+               sendMail(user.email, user.firstName, password, token);
                res.status(201).json({
                   message: 'User created',
                   user: user
@@ -67,30 +74,38 @@ router.post('/login', (req, res, next) => {
                message: 'Invalid Credentials'
             })
          }
-         bcrypt.compare(req.body.password, user.password, (err, result) => {
-            if (!result) {
-               return res.status(401).json({
-                  message: 'Password is not correct'
-               })
-            }
-            if (result) {
-               const token = jwt.sign({
-                  email: user.email,
-                  userId: user._id
-               },
-                  secretKey,
-                  {
-                     expiresIn: '8h'
+         if (user.isVerified) {
+            bcrypt.compare(req.body.password, user.password, (err, result) => {
+               if (!result) {
+                  return res.status(401).json({
+                     message: 'Password is not correct'
+                  })
+               }
+               if (result) {
+                  const token = jwt.sign({
+                     email: user.email,
+                     userId: user._id
                   },
+                     process.env.TOKEN_SECRET_KEY_LOGIN,
+                     {
+                        expiresIn: '8h'
+                     },
 
-               )
-               return res.status(200).json({
-                  message: 'Succefully logged in',
-                  token: token,
-                  user
-               })
-            }
-         })
+                  )
+                  return res.status(200).json({
+                     message: 'Succefully logged in',
+                     token: token,
+                     user
+                  })
+               }
+            })
+         }
+         else {
+            return res.status(401).json({
+               message: 'Please verify your email',
+            })
+         }
+
       })
       .catch(err => {
          console.log(err);
@@ -102,6 +117,7 @@ router.post('/login', (req, res, next) => {
 
 //get all users
 router.get('/', checkAuth, (req, res, next) => {
+
    User.find({}).exec()
       .then(users => {
          return res.send(users).status(200);
@@ -161,7 +177,8 @@ router.delete("/:id", checkAuth, (req, res, next) => {
 
 //edit user profile
 router.post("/edit", checkAuth, upload.single('avatar'), (req, res, next) => {
-   const id = req.body._id;
+   //const id = req.userData.userId;
+   const id = req.body._id
    const updateOps = {};
    if (req.body.ops == 'password') {
       bcrypt.hash(req.body.password, 10, (err, hash) => {
@@ -243,5 +260,26 @@ router.post('/removeProject', checkAuth, (req, res, next) => {
       });
 })
 
+router.get('/verify/:token', (req, res) => {
+   const token = req.params.token
+   try {
+      const decoded = jwt.verify(token, process.env.TOKEN_SECRET_KEY_SIGNUP);
+      User.findOne({ _id: decoded.userId }).then(user => {
+         if (!user) return res.status(404).json('Link expired');
+         if (user.isVerified) return res.status(404).json('Email is already verifed');
+         User.updateOne({ _id: decoded.userId }, { isVerified: true, isActive: true }).then(() => {
+            return res.status(201).json({
+               message: 'Your email is verified !'
+            })
+         })
+      })
+
+   } catch (error) {
+      return res.status(401).json({
+         message: 'Error',
+         error
+      })
+   }
+})
 
 module.exports = router

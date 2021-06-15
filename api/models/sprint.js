@@ -5,8 +5,7 @@ const SprintSchema = mongoose.Schema({
    dateStart: { type: Date },
    dateEnd: { type: Date },
    isActive: { type: Boolean },
-   projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },
-
+   projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' }
 });
 
 

@@ -4,7 +4,8 @@ const ProjectSchema = mongoose.Schema({
    name: { type: String },
    dateStart: { type: Date },
    description: { type: String },
-   status: { type: String }
+   status: { type: String },
+   users: [{ type: String, ref: 'Users' }],
 });
 
 

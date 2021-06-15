@@ -19,7 +19,8 @@ const userSchema = mongoose.Schema({
       enum: ['ADMIN', 'SCRUM_MASTER', 'COLLABORATOR'],
       default: 'COLLABORATOR'
    },
-   isActive: { type: Boolean, default: true},
+   isActive: { type: Boolean, default: false },
+   isVerified: { type: Boolean, default: false },
    image: { type: String },
    projects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }],
 });

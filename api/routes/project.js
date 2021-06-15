@@ -1,25 +1,27 @@
 const express = require('express');
 const router = express.Router();
 const Project = require('../models/project');
+const User = require('../models/user')
 const mongoose = require('mongoose');
-const checkAuth = require('../middleware/checkAuth')
+const checkAuth = require('../middleware/checkAuth');
+const project = require('../models/project');
 
 
 // Create project
 router.post('/', checkAuth, (req, res, next) => {
-   
+   console.log(req.body)
    const project = new Project({
       _id: new mongoose.Types.ObjectId(),
       name: req.body.name,
       dateStart: new Date(req.body.dateStart),
       description: req.body.description,
-      status: req.body.status
+      status: req.body.status,
+      users: req.body.users
    });
    project.save()
-      .then(result => {
+      .then(() => {
          res.status(201).json({
-            message: 'Project created',
-            project: project
+            message: 'Project created Succefully',
          })
       })
       .catch(err => {
@@ -31,10 +33,21 @@ router.post('/', checkAuth, (req, res, next) => {
 
 
 //get all projects
-router.get('/',checkAuth, (req, res, next) => {
+router.get('/', checkAuth, (req, res, next) => {
    Project.find({}).exec()
-      .then(projects => {
-         return res.send(projects).status(200);
+      .then((projects) => {
+         let promises = projects.map((project) => {
+            return User.find({
+               username: { $in: project.users }
+            }).then(users => {
+               project.users = users;
+            })
+         })
+         //console.log(projects);
+         Promise.all(promises).then(() => {
+            return res.send(projects).status(200)
+         })
+
       })
       .catch(err => {
          console.log(err);
@@ -45,7 +58,7 @@ router.get('/',checkAuth, (req, res, next) => {
 })
 
 // get project by name
-router.get('/:name',checkAuth, (req, res, next) => {
+router.get('/:name', checkAuth, (req, res, next) => {
    Project.find({ name: req.params.name }).exec()
       .then(project => {
          if (project.length >= 1) {
@@ -63,9 +76,9 @@ router.get('/:name',checkAuth, (req, res, next) => {
 })
 
 //delete a project by name
-router.delete("/:name",checkAuth, (req, res, next) => {
-   const name = req.params.name;
-   Project.remove({ name: name })
+router.delete("/:id", checkAuth, (req, res, next) => {
+   const id = req.params.id;
+   Project.remove({ _id: id })
       .exec()
       .then(result => {
          if (result.deletedCount === 1) {
@@ -74,7 +87,9 @@ router.delete("/:name",checkAuth, (req, res, next) => {
             });
          }
          else {
-            res.send('Project not found').status(404)
+            res.status(404).json({
+               message: 'Project not found'
+            })
          }
 
       })
@@ -87,7 +102,7 @@ router.delete("/:name",checkAuth, (req, res, next) => {
 });
 
 //edit project
-router.post("/edit", checkAuth,(req, res, next) => {
+router.post("/edit", checkAuth, (req, res, next) => {
    const name = req.body.name;
    const updateOps = {};
    updateOps.name = req.body.name;
