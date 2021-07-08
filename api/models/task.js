@@ -14,14 +14,13 @@ const TaskSchema = mongoose.Schema({
    },
    createdAt: { type: Date },
    estimation: { type: Number },
-   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-   lastUpdated: { type: Date },
-   lastUpdatedBy: { type: String },
+   createdBy: { type: Object, ref: 'User' },
+   updatedAt: { type: Date },
+   UpdatedBy: { type: String },
    sprintId: { type: mongoose.Schema.Types.ObjectId, ref: 'Sprint' },
-   affectedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-   tasklog: {type: mongoose.Schema.Types.ObjectId, ref: 'Tasklog'}
-
-
+   affectedTo: { type: Object, ref: 'User' },
+   tasklog: { type: mongoose.Schema.Types.ObjectId, ref: 'Tasklog' },
+   projectId: { type: String, ref: 'Project' },
 });
 
 

@@ -84,7 +84,11 @@ router.post('/login', (req, res, next) => {
                if (result) {
                   const token = jwt.sign({
                      email: user.email,
-                     userId: user._id
+                     userId: user._id,
+                     image: user.image,
+                     username: user.username,
+                     userType: user.userType,
+                     projects: user.projects
                   },
                      process.env.TOKEN_SECRET_KEY_LOGIN,
                      {
@@ -117,6 +121,7 @@ router.post('/login', (req, res, next) => {
 
 //get all users
 router.get('/', checkAuth, (req, res, next) => {
+   // console.log(req.userData)
 
    User.find({}).exec()
       .then(users => {
@@ -177,9 +182,9 @@ router.delete("/:id", checkAuth, (req, res, next) => {
 
 //edit user profile
 router.post("/edit", checkAuth, upload.single('avatar'), (req, res, next) => {
-   //const id = req.userData.userId;
+    console.log(req.body);
    const id = req.body._id
-   const updateOps = {};
+   const updateOps = req.body;
    if (req.body.ops == 'password') {
       bcrypt.hash(req.body.password, 10, (err, hash) => {
          updateOps.password = hash;
@@ -187,12 +192,24 @@ router.post("/edit", checkAuth, upload.single('avatar'), (req, res, next) => {
             .exec()
             .then(result => {
                if (result.nModified === 1) {
-                  res.status(200).json({
-                     message: 'User updated Succefully'
-                  });
+                  User.findOne({ _id: id }).exec()
+                     .then((result) => {
+                        res.status(200).json({
+                           result: result,
+                           message: 'User updated Succefully',
+
+                        });
+                     }).catch(err => {
+                        console.log(err);
+                        res.status(500).json({
+                           error: err
+                        });
+                     });
                }
                else {
-                  res.status(404).send('Operation faild 0')
+                  res.status(404).json({
+                     message: 'Operation faild'
+                  })
                }
             }).catch(err => {
                console.log(err);
@@ -268,9 +285,7 @@ router.get('/verify/:token', (req, res) => {
          if (!user) return res.status(404).json('Link expired');
          if (user.isVerified) return res.status(404).json('Email is already verifed');
          User.updateOne({ _id: decoded.userId }, { isVerified: true, isActive: true }).then(() => {
-            return res.status(201).json({
-               message: 'Your email is verified !'
-            })
+            return res.status(201).render('<h1>Your email is verified !</h1>')
          })
       })
 

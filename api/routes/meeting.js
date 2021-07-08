@@ -1,26 +1,26 @@
 const express = require('express');
 const router = express.Router();
-const Project = require('../models/project');
+const Meeting = require('../models/meeting');
 const User = require('../models/user')
 const mongoose = require('mongoose');
 const checkAuth = require('../middleware/checkAuth');
-const project = require('../models/project');
 
 
 // Create project
 router.post('/', checkAuth, (req, res, next) => {
-   const project = new Project({
+   const meeting = new Meeting({
       _id: new mongoose.Types.ObjectId(),
-      name: req.body.name,
-      dateStart: new Date(req.body.dateStart),
-      description: req.body.description,
-      status: req.body.status,
-      users: req.body.users
+      title: req.body.title,
+      date: req.body.title,
+      description: req.body.title,
+      collaborators: req.body.collaborators
    });
-   project.save()
+   meeting.save()
       .then(() => {
+         //User.find()
+         sendMail(user.email, user.firstName, password, token);
          res.status(201).json({
-            message: 'Project created Succefully',
+            message: 'Meeting created Succefully',
          })
       })
       .catch(err => {
