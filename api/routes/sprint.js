@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Sprint = require('../models/sprint');
+const Task = require('../models/task');
 const mongoose = require('mongoose');
 const checkAuth = require('../middleware/checkAuth')
 
@@ -9,10 +10,13 @@ const checkAuth = require('../middleware/checkAuth')
 router.post('/', checkAuth, (req, res, next) => {
    const sprint = new Sprint({
       _id: new mongoose.Types.ObjectId(),
-      dateStart: new Date(req.body.dateStart),
-      dateEnd: new Date(req.body.dateEnd),
-      isActive: req.body.isActive,
+      dateStart: req.body.dateStart,
+      dateEnd: req.body.dateEnd,
+      isActive: true,
+      projectId: req.body.projectId,
+      tasks: req.body.tasks
    });
+   console.log(sprint);
    sprint.save()
       .then(result => {
          res.status(201).json({
@@ -28,11 +32,20 @@ router.post('/', checkAuth, (req, res, next) => {
 })
 
 
-//get all sprints
-router.get('/',checkAuth, (req, res, next) => {
-   Sprint.find({}).exec()
-      .then(sprints => {
-         return res.send(sprints).status(200);
+//get active sprint
+router.get('/:projectId', checkAuth, (req, res) => {
+   Sprint.find({ projectId: req.params.projectId, isActive: true }).exec()
+      .then(sprint => {
+         let promises = sprint.map((sprint) => {
+            return Task.find({
+               _id: { $in: sprint.tasks }
+            }).then(tasks => {
+               sprint.tasks = tasks;
+            })
+         })
+         Promise.all(promises).then(() => {
+            return res.send(sprint).status(200)
+         })
       })
       .catch(err => {
          console.log(err);
@@ -43,7 +56,7 @@ router.get('/',checkAuth, (req, res, next) => {
 })
 
 //edit sprint
-router.post('/edit',checkAuth, (req, res, next) => {
+router.post('/edit', checkAuth, (req, res, next) => {
    const sprintId = req.body.sprintId;
    const updateOps = {};
    updateOps.dateStart = new Date(req.body.dateStart);
@@ -72,7 +85,7 @@ router.post('/edit',checkAuth, (req, res, next) => {
 
 
 // end a sprint
-router.post('/end', checkAuth,(req, res, next) => {
+router.post('/end', checkAuth, (req, res, next) => {
    const sprintId = req.body.id;
    Sprint.updateOne({ _id: sprintId }, { $set: { isActive: false } })
       .exec()
@@ -95,9 +108,5 @@ router.post('/end', checkAuth,(req, res, next) => {
       });
 
 })
-
-
-
-
 
 module.exports = router;

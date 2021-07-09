@@ -10,6 +10,8 @@ const commentRoutes = require('./api/routes/comment');
 const sprintRoutes = require('./api/routes/sprint');
 const taskRoutes = require('./api/routes/task');
 const tasklogRoutes = require('./api/routes/tasklog');
+const meetingRoutes = require('./api/routes/meeting');
+
 
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -46,6 +48,7 @@ app.use('/comments', commentRoutes);
 app.use('/sprints', sprintRoutes);
 app.use('/tasks', taskRoutes);
 app.use('/tasklog', tasklogRoutes);
+app.use('/meeting', meetingRoutes);
 
 app.use((req, res, next) => {
    const error = new Error('NOT FOUND')

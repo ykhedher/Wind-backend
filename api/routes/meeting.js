@@ -10,15 +10,16 @@ const checkAuth = require('../middleware/checkAuth');
 router.post('/', checkAuth, (req, res, next) => {
    const meeting = new Meeting({
       _id: new mongoose.Types.ObjectId(),
+      projectId: req.body.projectId,
       title: req.body.title,
-      date: req.body.title,
-      description: req.body.title,
+      date: req.body.date,
+      description: req.body.description,
       collaborators: req.body.collaborators
    });
    meeting.save()
       .then(() => {
          //User.find()
-         sendMail(user.email, user.firstName, password, token);
+         //sendMail(user.email, user.firstName, password, token);
          res.status(201).json({
             message: 'Meeting created Succefully',
          })
@@ -184,4 +185,4 @@ router.post("/addTeam", checkAuth, (req, res, next) => {
       });
 });
 
-module.exports = router;
+module.exports = router
