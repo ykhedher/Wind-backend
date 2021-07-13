@@ -5,13 +5,17 @@ const mongoose = require('mongoose');
 const checkAuth = require('../middleware/checkAuth')
 
 //add a comment
-router.post('/', checkAuth,(req, res, next) => {
+router.post('/', checkAuth, (req, res, next) => {
    const comment = new Comment({
       _id: new mongoose.Types.ObjectId(),
       text: req.body.text,
       createdAt: new Date(),
-      userId: req.body.userId,
-      taskId: req.body.taskId
+      taskId: req.body.taskId,
+      username: req.userData.username,
+      image: req.userData.image,
+      firstName: req.userData.firstName,
+      lastName: req.userData.lastName
+
    });
    comment.save()
       .then(result => {
@@ -28,10 +32,10 @@ router.post('/', checkAuth,(req, res, next) => {
 })
 
 //get all comments
-router.get('/',checkAuth, (req, res, next) => {
-   Comment.find({}).exec()
+router.get('/:id', checkAuth, (req, res, next) => {
+   Comment.find({ taskId: req.params.id }).exec()
       .then(comments => {
-         return res.send(comments).status(200);
+         return res.status(200).send(comments);
       })
       .catch(err => {
          console.log(err);
@@ -43,7 +47,7 @@ router.get('/',checkAuth, (req, res, next) => {
 
 
 // edit a comment
-router.post('/edit',checkAuth, (req, res, next) => {
+router.post('/edit', checkAuth, (req, res, next) => {
    const id = req.body.id;
    Comment.updateOne({ _id: id }, { $set: { text: req.body.text, createdAt: new Date() } })
       .exec()
@@ -67,7 +71,7 @@ router.post('/edit',checkAuth, (req, res, next) => {
 });
 
 //delete a comment
-router.delete("/:id",checkAuth, (req, res, next) => {
+router.delete("/:id", checkAuth, (req, res, next) => {
    const id = req.params.id;
    console.log(id)
    Comment.remove({ _id: id })

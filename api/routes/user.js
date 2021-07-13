@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const multer = require('multer')
 const jwt = require('jsonwebtoken');
-const sendMail = require('../services/emailSender')
+const {sendMail} = require('../services/emailSender')
 const checkAuth = require('../middleware/checkAuth');
 
 var storage = multer.diskStorage({
@@ -86,6 +86,8 @@ router.post('/login', (req, res, next) => {
                      email: user.email,
                      userId: user._id,
                      image: user.image,
+                     firstName: user.firstName,
+                     lastName: user.lastName,
                      username: user.username,
                      userType: user.userType,
                      projects: user.projects

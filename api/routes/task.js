@@ -34,7 +34,7 @@ router.post('/', checkAuth, (req, res, next) => {
          })
          const taskLog = new Tasklog({
             _id: new mongoose.Types.ObjectId(),
-            messages: [{ message: `<p>Task created at <b>${now}</b> by <span style="width: 30px; height: 30px; line-height: 30px; font-size: 18px;" class="ant-avatar ant-avatar-circle ant-avatar-image"><img src={http://localhost:3030/uploads/${req.userData.image}} /></span><strong> @${req.userData.username}</strong></p>` }],
+            messages: [{ message: `<p>Task created at <b>${now}</b> by <span style="width: 30px; height: 30px; line-height: 30px; font-size: 18px;" class="ant-avatar ant-avatar-circle ant-avatar-image"><img src="http://localhost:3030/uploads/${req.userData.image}" /></span><strong> @${req.userData.username}</strong></p>` }],
             taskId: task._id
          })
          taskLog.save()

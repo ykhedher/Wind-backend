@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 const Sprint = require('../models/sprint');
 const Task = require('../models/task');
+const User = require('../models/user');
 const mongoose = require('mongoose');
 const checkAuth = require('../middleware/checkAuth')
-
 
 // Create sprint
 router.post('/', checkAuth, (req, res, next) => {
@@ -32,20 +32,45 @@ router.post('/', checkAuth, (req, res, next) => {
 })
 
 
+//get ALL sprints
+router.get('/all/:projectId', checkAuth, (req, res) => {
+   Sprint.find({ projectId: req.params.projectId, isActive: false }).exec()
+      .then(sprint => {
+         res.status(200).send(sprint)
+      })
+      .catch(err => {
+         console.log(err);
+         res.status(500).json({
+            error: err
+         })
+      })
+})
+
 //get active sprint
 router.get('/:projectId', checkAuth, (req, res) => {
    Sprint.find({ projectId: req.params.projectId, isActive: true }).exec()
       .then(sprint => {
-         let promises = sprint.map((sprint) => {
+         if (sprint.length > 0) {
+            let list = []
             return Task.find({
-               _id: { $in: sprint.tasks }
+               _id: { $in: sprint[0].tasks }
             }).then(tasks => {
-               sprint.tasks = tasks;
+               let promises = tasks.map(t => {
+                  return User.find({
+                     $or: [{ username: t.affectedTo }, { _id: t.createdBy }]
+                  }, 'firstName username image').then(user => {
+                     t.createdBy = user[0];
+                     t.affectedTo = user[1];
+                     list.push(t)
+                  })
+               })
+               Promise.all(promises).then(() => {
+                  sprint[0].tasks = list;
+                  return res.send(sprint).status(200)
+               })
             })
-         })
-         Promise.all(promises).then(() => {
-            return res.send(sprint).status(200)
-         })
+         }
+         else res.send([]).status(404)
       })
       .catch(err => {
          console.log(err);
@@ -91,12 +116,17 @@ router.post('/end', checkAuth, (req, res, next) => {
       .exec()
       .then(result => {
          if (result.nModified === 1) {
+            console.log('changed')
+
             res.status(200).json({
                message: 'Sprint closed'
             });
          }
          else {
-            res.status(404).send('Operation faild')
+            console.log('not changed')
+            res.status(404).json({
+               message: 'Operation faild'
+            })
          }
 
       })

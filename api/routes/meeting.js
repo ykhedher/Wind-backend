@@ -4,6 +4,7 @@ const Meeting = require('../models/meeting');
 const User = require('../models/user')
 const mongoose = require('mongoose');
 const checkAuth = require('../middleware/checkAuth');
+const { sendMailMeeting } = require('../services/emailSender')
 
 
 // Create project
@@ -18,6 +19,15 @@ router.post('/', checkAuth, (req, res, next) => {
    });
    meeting.save()
       .then(() => {
+         sendMailMeeting(req.userData.email, req.userData.firstName, meeting);
+         User.find({
+            username: { $in: meeting.collaborators }
+         }).then(users => {
+            users.map((user) => {
+               console.log('user.email, user.firstName, meeting')
+               sendMailMeeting(user.email, user.firstName, meeting); //send email + the creator of the meeting
+            })
+         })
          //User.find()
          //sendMail(user.email, user.firstName, password, token);
          res.status(201).json({
@@ -33,18 +43,18 @@ router.post('/', checkAuth, (req, res, next) => {
 
 
 //get all projects
-router.get('/', checkAuth, (req, res, next) => {
-   Project.find({}).exec()
-      .then((projects) => {
-         let promises = projects.map((project) => {
+router.get('/:projectId', checkAuth, (req, res) => {
+   Meeting.find({projectId: req.params.projectId}).exec()
+      .then((meetings) => {
+         let promises = meetings.map((meeting) => {
             return User.find({
-               username: { $in: project.users }
-            }).then(users => {
-               project.users = users;
+               username: { $in: meeting.collaborators }
+            }, 'username image').then(users => {
+               meeting.collaborators = users;
             })
          })
          Promise.all(promises).then(() => {
-            return res.send(projects).status(200)
+            return res.send(meetings).status(200)
          })
       })
       .catch(err => {
