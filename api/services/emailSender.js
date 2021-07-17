@@ -22,8 +22,6 @@ You have joined Wind Project Management
 Click the link below to verify your email:
 http://localhost:3030/users/verify/${token}
 
-
-
 HERE IS YOUR LOGIN INFO:
    email: ${receiverEmail}
    password: ${recieverPassword}
@@ -38,6 +36,9 @@ Wind Consulting Team
      <p>Click the link below to verify your email:</p> <br/>
 <a href="http://localhost:3030/users/verify/${token}" target="_blank"> Verify your email</a>
      <br/>
+     <p>HERE IS YOUR LOGIN INFO:</p><br/>
+     <p>email: ${receiverEmail}</p><br/>
+     <p>password: ${recieverPassword}</p><br/>
      <h4> Wind Consulting Team </h4>
       `
    };
@@ -83,4 +84,4 @@ https://safe-woodland-14290.herokuapp.com/a0fc7cba-1ef8-446b-808d-52ee27e33af2`
 }
 
 
-module.exports = {sendMail, sendMailMeeting};
+module.exports = { sendMail, sendMailMeeting };

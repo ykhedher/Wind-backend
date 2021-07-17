@@ -54,29 +54,6 @@ router.get('/', checkAuth, (req, res, next) => {
       })
 })
 
-// get project by name
-router.get('/:id', checkAuth, (req, res, next) => {
-   Project.find({ _id: req.params.id }).exec()
-      .then(project => {
-         if (project.length >= 1) {
-            User.find({
-               username: { $in: project[0].users }
-            }).then(users => {
-               project[0].users = users;
-               res.send(project).status(200);
-            })
-         }
-         else
-            res.send('No project found').status(404)
-      })
-      .catch(err => {
-         console.log(err);
-         res.status(500).json({
-            error: err
-         })
-      })
-})
-
 //delete a project by id
 router.delete("/:id", checkAuth, (req, res, next) => {
    const id = req.params.id;
@@ -103,16 +80,54 @@ router.delete("/:id", checkAuth, (req, res, next) => {
       });
 });
 
+//get all projects
+router.get('/all', checkAuth, (req, res, next) => {
+   Project.find({status: 'DONE'}).exec()
+      .then((projects) => {
+         res.status(200).send(projects)
+      })
+      .catch(err => {
+         console.log(err);
+         res.status(500).json({
+            error: err
+         })
+      })
+})
+
+
+//get project by name 
+router.get('/:id', checkAuth, (req, res, next) => {
+   Project.find({ _id: req.params.id }).exec()
+      .then(project => {
+         if (project.length >= 1) {
+            User.find({
+               username: { $in: project[0].users }
+            }).then(users => {
+               project[0].users = users;
+               res.send(project).status(200);
+            })
+         }
+         else
+            res.send('No project found').status(404)
+      })
+      .catch(err => {
+         console.log(err);
+         res.status(500).json({
+            error: err
+         })
+      })
+})
+
 //edit project
 router.post("/edit", checkAuth, (req, res, next) => {
-   const name = req.body.name;
+   const id = req.body._id;
    const updateOps = {};
    updateOps.name = req.body.name;
    updateOps.dateStart = new Date(req.body.dateStart);
    updateOps.description = req.body.description;
    updateOps.status = req.body.status
    console.log(updateOps)
-   Project.updateOne({ name: name }, { $set: updateOps })
+   Project.updateOne({ _id: id }, { $set: updateOps })
       .exec()
       .then(result => {
          if (result.nModified === 1) {

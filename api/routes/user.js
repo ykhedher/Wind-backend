@@ -124,7 +124,6 @@ router.post('/login', (req, res, next) => {
 //get all users
 router.get('/', checkAuth, (req, res, next) => {
    // console.log(req.userData)
-
    User.find({}).exec()
       .then(users => {
          return res.send(users).status(200);
@@ -287,7 +286,7 @@ router.get('/verify/:token', (req, res) => {
          if (!user) return res.status(404).json('Link expired');
          if (user.isVerified) return res.status(404).json('Email is already verifed');
          User.updateOne({ _id: decoded.userId }, { isVerified: true, isActive: true }).then(() => {
-            return res.status(201).render('<h1>Your email is verified !</h1>')
+            return res.status(201).json('Your email is verified !')
          })
       })
 
